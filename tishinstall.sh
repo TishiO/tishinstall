@@ -21,6 +21,7 @@ done
 timedatectl set-ntp true
 
 ##PARTITION SELECTION
+lsblk
 
 part_confirm=true
 
@@ -43,6 +44,7 @@ echo "It continues."
 echo ""
 
 ##SWAP SELECTION
+lsblk
 
 swap_confirm=false
 
@@ -71,6 +73,7 @@ swapon $swappath
 continue_confirm=true
 
 while [ "$continue_confirm" = true ] ; do
+    lsblk
     echo "Are you SURE you would like to use this partition scheme?"
     select yn in "Yes" "No"; do
         case $yn in
@@ -114,7 +117,6 @@ $EDITOR /etc/pacman.d/mirrorlist
 #PACSTRAP
 pacstrap /mnt base
 genfstab -p /mnt >> /mnt/etc/fstab
-arch-chroot /mnt
 
 name_confirm=true
 
@@ -130,17 +132,17 @@ while [ "$name_confirm" = true ] ; do
     done
 done
 
-echo $compy_name > /etc/hostname
+arch-chroot /mnt echo $compy_name > /etc/hostname
 
-ln -s /usr/share/zoneinfo/US/Eastern /etc/localtime
+arch-chroot /mnt ln -s /usr/share/zoneinfo/US/Eastern /etc/localtime
 
-echo "LANG=en_US.UTF-8" >> /etc/locale.gen
-locale-gen
+arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.gen
+arch-chroot /mnt locale-gen
 
-mkinitcpio -p linux
-passwd
+arch-chroot /mnt mkinitcpio -p linux
+arch-chroot /mnt passwd
 
-pacman -S grub os-prober
+arch-chroot /mnt pacman -S grub os-prober
 
 grub_confirm=true
 
@@ -156,6 +158,34 @@ while [ "$grub_confirm" = true ] ; do
     done
 done
 
-os-prober
-grub-install --recheck --target=i386-pc $grubpath
-grub-mkconfig -o /boot/grub/grub.cfg
+arch-chroot /mnt os-prober
+arch-chroot /mnt grub-install --recheck --target=i386-pc $grubpath
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+
+#Have script copy netctl configuration from USB drive to computer
+netctl list
+
+net_confirm=false
+
+echo "Would you like to copy a network profile to the system?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) net_confirm=true;break;;
+        No ) break;;
+    esac
+done
+
+while [ "$net_confirm" = true ] ; do
+    read -p "Enter network profile to copy to system: " netprof
+    echo "Entered network profile:" $netprof
+    echo "Are you SURE you would like to use this device?"
+    select yn in "Yes" "No"; do
+        case $yn in
+            Yes ) net_confirm=false;break;;
+            No ) break;;
+        esac
+    done
+done
+
+cp /etc/netctl/$netprof /mnt/etc/netctl/$netprof
+arch-chroot /mnt netctl enable $netprof
