@@ -23,25 +23,29 @@ timedatectl set-ntp true
 ##PARTITION SELECTION
 lsblk
 
-part_confirm=true
+disk_confirm=true
 
-while [ "$part_confirm" = true ] ; do
-    read -p "Enter main partition (include /dev/): " mntpath
-    echo "Entered partition:" $mntpath
-    echo "Are you SURE you would like to use this partition?"
+while [ "$disk_confirm" = true ] ; do
+    read -p "Enter main disk (e.g. /dev/sda): " mntpath
+    echo "Entered partition:" $diskpath
+    echo "Are you SURE you would like to use this disk?"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) part_confirm=false;break;;
+            Yes ) disk_confirm=false;break;;
             No ) break;;
         esac
     done
 done
 
-mount $mntpath /mnt
-
-echo ""
-echo "It continues."
-echo ""
+parted -s $diskpath mklabel gpt
+parted -s $diskpath mkpart ESP 1MiB 513MiB
+parted -s $diskpath set 1 boot on
+parted -s $diskpath mkpart primary ext4 513MiB 100%
+mkfs.fat -F32 ${diskpath}1
+mkfs.ext4 ${diskpath}2
+mount ${diskpath}2 /mnt
+sudo mkdir -p /mnt/boot
+mount ${diskpath}1 /mnt/boot
 
 ##SWAP SELECTION
 lsblk
@@ -68,7 +72,7 @@ while [ "$swap_confirm" = true ] ; do
     done
 done
 
-swapon $swappath
+#swapon $swappath
 
 continue_confirm=true
 
@@ -112,7 +116,7 @@ rankmirrors /etc/pacman.d/mirrorlist.tmp > /etc/pacman.d/mirrorlist
 rm /etc/pacman.d/mirrorlist.tmp
 # allow global read access (required for non-root yaourt execution)
 chmod +r /etc/pacman.d/mirrorlist
-$EDITOR /etc/pacman.d/mirrorlist
+#$EDITOR /etc/pacman.d/mirrorlist
 
 #PACSTRAP
 pacstrap /mnt base
@@ -159,7 +163,7 @@ while [ "$grub_confirm" = true ] ; do
 done
 
 arch-chroot /mnt os-prober
-arch-chroot /mnt grub-install --recheck --target=i386-pc $grubpath
+arch-chroot /mnt grub-install #$grubpath
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
 #Have script copy netctl configuration from USB drive to computer
@@ -187,5 +191,5 @@ while [ "$net_confirm" = true ] ; do
     done
 done
 
-cp /etc/netctl/$netprof /mnt/etc/netctl/$netprof
-arch-chroot /mnt netctl enable $netprof
+#cp /etc/netctl/$netprof /mnt/etc/netctl/$netprof
+#arch-chroot /mnt netctl enable $netprof
