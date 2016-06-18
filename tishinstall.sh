@@ -26,7 +26,7 @@ lsblk
 disk_confirm=true
 
 while [ "$disk_confirm" = true ] ; do
-    read -p "Enter main disk (e.g. /dev/sda): " mntpath
+    read -p "Enter main disk (e.g. /dev/sda): " diskpath
     echo "Entered partition:" $diskpath
     echo "Are you SURE you would like to use this disk?"
     select yn in "Yes" "No"; do
