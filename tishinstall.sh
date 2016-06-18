@@ -147,8 +147,6 @@ arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.gen
 arch-chroot /mnt mkinitcpio -p linux
 arch-chroot /mnt passwd
 
-arch-chroot /mnt pacman -S --noconfirm grub os-prober
-
 grub_confirm=true
 
 while [ "$grub_confirm" = true ] ; do
@@ -163,8 +161,14 @@ while [ "$grub_confirm" = true ] ; do
     done
 done
 
-arch-chroot /mnt os-prober
-arch-chroot /mnt bootctl install #--path=$efipath
+arch-chroot /mnt bootctl install
+
+arch-chroot /mnt cp /usr/share/systemd/bootctl/loader.conf /boot/loader/
+arch-chroot /mnt cp /usr/share/systemd/bootctl/arch.conf /boot/loader/entries/
+
+sed -i '$d' /boot/loader/entries/arch.conf
+uuid="$(arch-chroot /mnt blkid -s PARTUUID -o value ${diskpath}2)"
+arch-chroot /mnt echo "options root=PARTUUID="$uuid" rw" >> /boot/loader/entries/arch.conf
 
 #Have script copy netctl configuration from USB drive to computer
 netctl list
