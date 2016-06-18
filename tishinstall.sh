@@ -140,8 +140,9 @@ arch-chroot /mnt echo $compy_name > /etc/hostname
 
 arch-chroot /mnt ln -s /usr/share/zoneinfo/US/Eastern /etc/localtime
 
-arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.gen
+arch-chroot /mnt echo "en_US.UTF-8 UTF-8" > /etc/locale.conf
 arch-chroot /mnt locale-gen
+arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.gen
 
 arch-chroot /mnt mkinitcpio -p linux
 arch-chroot /mnt passwd
@@ -151,9 +152,9 @@ arch-chroot /mnt pacman -S --noconfirm grub os-prober
 grub_confirm=true
 
 while [ "$grub_confirm" = true ] ; do
-    read -p "Enter device for grub installation (include /dev/): " grubpath
-    echo "Entered device:" $grubpath
-    echo "Are you SURE you would like to use this device?"
+    read -p "Enter EFI System Partition path (e.g. /boot): " efipath
+    echo "Entered path:" $efipath
+    echo "Are you SURE you would like to use this path?"
     select yn in "Yes" "No"; do
         case $yn in
             Yes ) grub_confirm=false;break;;
@@ -163,8 +164,7 @@ while [ "$grub_confirm" = true ] ; do
 done
 
 arch-chroot /mnt os-prober
-arch-chroot /mnt grub-install $grubpath
-arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+arch-chroot /mnt bootctl install #--path=$efipath
 
 #Have script copy netctl configuration from USB drive to computer
 netctl list
