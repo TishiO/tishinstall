@@ -166,8 +166,8 @@ arch-chroot /mnt bootctl install
 arch-chroot /mnt cp /usr/share/systemd/bootctl/loader.conf /boot/loader/
 arch-chroot /mnt cp /usr/share/systemd/bootctl/arch.conf /boot/loader/entries/
 
-sed -i '$d' /boot/loader/entries/arch.conf
-uuid="$(arch-chroot /mnt blkid -s PARTUUID -o value ${diskpath}2)"
+arch-chroot /mnt sed -i '$d' /boot/loader/entries/arch.conf
+uuid="$(arch-chroot /mnt blkid -s PARTUUID -o value "$diskpath"2)"
 arch-chroot /mnt echo "options root=PARTUUID="$uuid" rw" >> /boot/loader/entries/arch.conf
 
 #Have script copy netctl configuration from USB drive to computer
