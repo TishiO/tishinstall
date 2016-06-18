@@ -127,7 +127,7 @@ name_confirm=true
 while [ "$name_confirm" = true ] ; do
     read -p "Enter computer name: " compy_name
     echo "Entered name:" $compy_name
-    echo "Are you SURE you would like to use this partition?"
+    echo "Are you SURE you would like to use this computer name?"
     select yn in "Yes" "No"; do
         case $yn in
             Yes ) name_confirm=false;break;;
@@ -146,7 +146,7 @@ arch-chroot /mnt locale-gen
 arch-chroot /mnt mkinitcpio -p linux
 arch-chroot /mnt passwd
 
-arch-chroot /mnt pacman -S grub os-prober
+arch-chroot /mnt pacman -S --noconfirm grub os-prober
 
 grub_confirm=true
 
@@ -163,7 +163,7 @@ while [ "$grub_confirm" = true ] ; do
 done
 
 arch-chroot /mnt os-prober
-arch-chroot /mnt grub-install #$grubpath
+arch-chroot /mnt grub-install $grubpath
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
 #Have script copy netctl configuration from USB drive to computer
