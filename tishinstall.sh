@@ -193,7 +193,7 @@ while [ "$net_confirm" = true ] ; do
     done
 done
 
-arch-chroot /mnt wget https://raw.githubusercontent.com/TishiO/tishinstall/master/tishinstall_part2.sh -P /root
+wget https://raw.githubusercontent.com/TishiO/tishinstall/master/tishinstall_part2.sh -P /mnt/root
 
 umount ${diskpath}1
 umount ${diskpath}2
@@ -210,8 +210,10 @@ while [ "$reboot_confirm" = true ] ; do
     echo "Press yes when ready to go for shutdown."
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) reboot_confirm=false;cp /etc/netctl/$netprof /mnt/etc/netctl/$netprof;arch-chroot /mnt netctl enable $netprof;break;;
+            Yes ) reboot_confirm=false;break;;
             No ) break;;
         esac
     done
 done
+
+poweroff
