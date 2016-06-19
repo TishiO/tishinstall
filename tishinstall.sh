@@ -85,12 +85,6 @@ while [ "$continue_confirm" = true ] ; do
     done
 done
 
-#Locale generation
-ln -s /usr/share/zoneinfo/US/Eastern /etc/localtime
-echo "en_US.UTF-8 UTF-8" > /etc/locale.conf
-locale-gen
-echo "LANG=en_US.UTF-8" >> /etc/locale.gen
-
 #Check to see if swap is actually working on current install
 
 ##STOLEN CODE
