@@ -30,8 +30,17 @@ echo "EDITOR=vim" >> /etc/profile
 #Add new user to sudoers list, give all permissions
 echo -e "$username"'\t'"ALL=(ALL) ALL" >> /etc/sudoers
 
-mkdir /home/${username}/builds
-
-wget https://aur.archlinux.org/cgit/aur.git/snapshot/yaourt.tar.gz -P /home/${username}/builds
-tar -xvf /home/${username}/builds/yaourt.tar.gz
-su $username -c "makepkg -sri -p /home/${username}/builds/yaourt/PKGBUILD"
+#Install AUR Helper
+cd /home/${username}
+sudo -u andy mkdir builds
+cd builds
+sudo -u andy curl https://aur.archlinux.org/cgit/aur.git/snapshot/package-query.tar.gz
+sudo -u andy curl https://aur.archlinux.org/cgit/aur.git/snapshot/yaourt.tar.gz
+sudo -u andy tar -xvf package-query.tar.gz
+sudo -u andy tar -xvf yaourt.tar.gz
+cd package-query
+sudo -u andy makepkg -sri --noconfirm
+cd ..
+cd yaourt
+sudo -u andy makepkg -sri --noconfirm
+cd
