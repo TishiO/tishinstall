@@ -140,10 +140,10 @@ done
 arch-chroot /mnt echo $compy_name > /etc/hostname
 
 #Locale generation
-arch-chroot /mnt ln -s /usr/share/zoneinfo/US/Eastern /etc/localtime
-arch-chroot /mnt echo "en_US.UTF-8 UTF-8" > /etc/locale.conf
-arch-chroot /mnt locale-gen
-arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.gen
+ln -s /usr/share/zoneinfo/US/Eastern /etc/localtime
+echo "en_US.UTF-8 UTF-8" > /etc/locale.conf
+locale-gen
+echo "LANG=en_US.UTF-8" >> /etc/locale.gen
 
 arch-chroot /mnt mkinitcpio -p linux
 arch-chroot /mnt passwd
