@@ -66,13 +66,11 @@ while [ "$swap_confirm" = true ] ; do
     echo "Are you SURE you would like to use this partition?"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) swap_confirm=false;break;;
+            Yes ) swap_confirm=false;swapon $swappath;break;;
             No ) break;;
         esac
     done
 done
-
-#swapon $swappath
 
 continue_confirm=true
 
@@ -147,15 +145,15 @@ arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.gen
 arch-chroot /mnt mkinitcpio -p linux
 arch-chroot /mnt passwd
 
-grub_confirm=true
+efi_confirm=true
 
-while [ "$grub_confirm" = true ] ; do
+while [ "$efi_confirm" = true ] ; do
     read -p "Enter EFI System Partition path (e.g. /boot): " efipath
     echo "Entered path:" $efipath
     echo "Are you SURE you would like to use this path?"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) grub_confirm=false;break;;
+            Yes ) efi_confirm=false;break;;
             No ) break;;
         esac
     done
@@ -163,12 +161,12 @@ done
 
 arch-chroot /mnt bootctl install
 
-arch-chroot /mnt cp /usr/share/systemd/bootctl/loader.conf /boot/loader/
-arch-chroot /mnt cp /usr/share/systemd/bootctl/arch.conf /boot/loader/entries/
+arch-chroot /mnt cp /usr/share/systemd/bootctl/loader.conf $efipath/loader/
+arch-chroot /mnt cp /usr/share/systemd/bootctl/arch.conf $efipath/loader/entries/
 
-sed -i '$d' /mnt/boot/loader/entries/arch.conf
+sed -i '$d' /mnt$efipath/loader/entries/arch.conf
 uuid="$(blkid -s PARTUUID -o value "$diskpath"2)"
-echo "options root=PARTUUID="$uuid" rw" >> /mnt/boot/loader/entries/arch.conf
+echo "options root=PARTUUID="$uuid" rw" >> /mnt$efipath/loader/entries/arch.conf
 
 #Have script copy netctl configuration from USB drive to computer
 netctl list
@@ -189,11 +187,31 @@ while [ "$net_confirm" = true ] ; do
     echo "Are you SURE you would like to use this device?"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) net_confirm=false;break;;
+            Yes ) net_confirm=false;cp /etc/netctl/$netprof /mnt/etc/netctl/$netprof;arch-chroot /mnt netctl enable $netprof;break;;
             No ) break;;
         esac
     done
 done
 
-#cp /etc/netctl/$netprof /mnt/etc/netctl/$netprof
-#arch-chroot /mnt netctl enable $netprof
+arch-chroot /mnt wget https://raw.githubusercontent.com/TishiO/tishinstall/master/tishinstall_part2.sh -P /root
+
+umount ${diskpath}1
+umount ${diskpath}2
+
+
+echo "Installation part 1 is complete"
+echo "Device is going for shutdown"
+echo "!!Please remove install medium when device shuts down, then boot device"
+echo "Run 'tishinstall_part2.sh' when logged in as root"
+
+reboot_confirm=true
+
+while [ "$reboot_confirm" = true ] ; do
+    echo "Press yes when ready to go for shutdown."
+    select yn in "Yes" "No"; do
+        case $yn in
+            Yes ) reboot_confirm=false;cp /etc/netctl/$netprof /mnt/etc/netctl/$netprof;arch-chroot /mnt netctl enable $netprof;break;;
+            No ) break;;
+        esac
+    done
+done
