@@ -1,5 +1,3 @@
-EDITOR=vim
-
 ##CREDITS AND WARNING BLOCK
 echo "TishiO's Arch Install Script"
 echo "This script is really, really basic"
@@ -140,6 +138,7 @@ arch-chroot /mnt locale-gen
 arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.gen
 
 arch-chroot /mnt mkinitcpio -p linux
+echo "Enter root password:"
 arch-chroot /mnt passwd
 
 efi_confirm=true
@@ -163,7 +162,7 @@ arch-chroot /mnt cp /usr/share/systemd/bootctl/arch.conf $efipath/loader/entries
 
 sed -i '$d' /mnt$efipath/loader/entries/arch.conf
 uuid="$(blkid -s PARTUUID -o value "$diskpath"2)"
-echo "options root=PARTUUID="$uuid" rw" >> /mnt$efipath/loader/entries/arch.conf
+echo -e "options"'\t'"root=PARTUUID="$uuid" rw" >> /mnt$efipath/loader/entries/arch.conf
 
 #Have script copy netctl configuration from USB drive to computer
 netctl list
