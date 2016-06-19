@@ -85,8 +85,11 @@ while [ "$continue_confirm" = true ] ; do
     done
 done
 
-echo ""
-echo "It continues again."
+#Locale generation
+arch-chroot /mnt ln -s /usr/share/zoneinfo/US/Eastern /etc/localtime
+arch-chroot /mnt echo "en_US.UTF-8 UTF-8" > /etc/locale.conf
+arch-chroot /mnt locale-gen
+arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.gen
 
 #Check to see if swap is actually working on current install
 
@@ -136,8 +139,8 @@ done
 
 arch-chroot /mnt echo $compy_name > /etc/hostname
 
+#Locale generation
 arch-chroot /mnt ln -s /usr/share/zoneinfo/US/Eastern /etc/localtime
-
 arch-chroot /mnt echo "en_US.UTF-8 UTF-8" > /etc/locale.conf
 arch-chroot /mnt locale-gen
 arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.gen
